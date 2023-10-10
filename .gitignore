@@ -1,3 +1,4 @@
 *.zip
 faces/
 lightning_logs/
+*.out
