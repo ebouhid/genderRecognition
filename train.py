@@ -10,7 +10,7 @@ BATCH_SIZE = 64
 NUM_WORKERS = 8
 NUM_EPOCHS = 100
 CSV_DIR = 'faces.csv'
-MIN_DELTA = 1e-2
+MIN_DELTA = 1e-4
 PATIENCE = 5
 
 # Set random seed
@@ -33,8 +33,8 @@ val_loader = DataLoader(val_dataset, batch_size=BATCH_SIZE, shuffle=False, num_w
 model = BinaryClassificationNet()
 
 # Create early stopping callback
-early_stopping = EarlyStopping('val_accuracy', min_delta=MIN_DELTA,patience=PATIENCE)
+early_stopping = EarlyStopping('val_loss', min_delta=MIN_DELTA,patience=PATIENCE)
 
 # Train model
-trainer = pl.Trainer(max_epochs=NUM_EPOCHS)
+trainer = pl.Trainer(max_epochs=NUM_EPOCHS, callbacks=[early_stopping])
 trainer.fit(model, train_loader, val_loader)

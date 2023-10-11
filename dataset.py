@@ -19,6 +19,7 @@ class GenderRecognitionDataset(Dataset):
             
             gender = row.gender
             class_id = 0 if gender == 'man' else 1
+            # class_id = np.array([class_id], dtype=np.float32)
 
             self.data.append({"image": image, "class_id": class_id})
     
