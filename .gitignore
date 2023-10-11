@@ -2,3 +2,4 @@
 faces/
 lightning_logs/
 *.out
+__pycache__/
