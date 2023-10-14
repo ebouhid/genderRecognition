@@ -66,9 +66,9 @@ class BinaryClassificationNet(pl.LightningModule):
         outputs = self(inputs)
         labels = torch.Tensor(labels).unsqueeze(1)
         labels = labels.float()
-        # preds = (outputs > 0.5).float()
         loss = self.criterion(outputs, labels)
-        self.log('train_loss', loss)
+        self.log('train_loss', loss, prog_bar=True, on_epoch=True)
+        self.log('train_acc', self.accuracy(outputs, labels), prog_bar=True, on_epoch=True)
         return loss
 
     def validation_step(self, batch, batch_idx):
@@ -79,9 +79,9 @@ class BinaryClassificationNet(pl.LightningModule):
         # preds = (outputs > 0.5).float()
         loss = self.criterion(outputs, labels)
 
-        self.log('val_loss', loss)
-        self.log('val_acc', self.accuracy(outputs, labels))
-    
+        self.log('val_loss', loss, on_epoch=True)
+        self.log('val_acc', self.accuracy(outputs, labels), on_epoch=True)
+        
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=self.lr)
         return optimizer
