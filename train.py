@@ -1,5 +1,6 @@
 from binaryclassificationnet import BinaryClassificationNet
 from binaryinception import BinaryInception
+from binaryresnet import BinaryResnet
 from dataset import GenderRecognitionDataset
 from torch.utils.data import DataLoader
 from sklearn.model_selection import train_test_split
@@ -8,7 +9,7 @@ import pytorch_lightning as pl
 from pytorch_lightning.callbacks import EarlyStopping
 import torch.nn as nn
 
-BATCH_SIZE = 64
+BATCH_SIZE = 16
 NUM_WORKERS = 8
 NUM_EPOCHS = 100
 CSV_DIR = 'faces.csv'
@@ -35,7 +36,7 @@ val_loader = DataLoader(val_dataset, batch_size=BATCH_SIZE, shuffle=False, num_w
 
 # Create model
 # model = BinaryClassificationNet(loss=LOSS, lr=LEARNING_RATE)
-model = BinaryInception( lr=LEARNING_RATE)
+model = BinaryResnet(loss=LOSS, lr=LEARNING_RATE)
 
 # Create early stopping callback
 early_stopping = EarlyStopping('val_loss', min_delta=MIN_DELTA,patience=PATIENCE)
