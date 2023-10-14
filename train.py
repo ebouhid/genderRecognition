@@ -10,7 +10,9 @@ from pytorch_lightning.callbacks import EarlyStopping
 import torch.nn as nn
 import albumentations as A
 from albumentations.pytorch import ToTensorV2
+import mlflow.pytorch
 
+# Set hyperparameters
 BATCH_SIZE = 16
 NUM_WORKERS = 8
 NUM_EPOCHS = 100
@@ -51,9 +53,16 @@ val_loader = DataLoader(val_dataset,
                         shuffle=False,
                         num_workers=NUM_WORKERS)
 
+# Enable autologging
+mlflow.pytorch.autolog()
+mlflow.log_params({'batch_size': BATCH_SIZE, 'loss': LOSS})
+
 # Create model
 # model = BinaryClassificationNet(loss=LOSS, lr=LEARNING_RATE)
 model = BinaryResnet(loss=LOSS, lr=LEARNING_RATE)
+
+# Log model name as a tag
+mlflow.set_tag('model_name', model.__class__.__name__)
 
 # Create early stopping callback
 early_stopping = EarlyStopping('val_loss',
