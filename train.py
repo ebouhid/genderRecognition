@@ -39,7 +39,7 @@ val_loader = DataLoader(val_dataset, batch_size=BATCH_SIZE, shuffle=False, num_w
 model = BinaryResnet(loss=LOSS, lr=LEARNING_RATE)
 
 # Create early stopping callback
-early_stopping = EarlyStopping('val_loss', min_delta=MIN_DELTA,patience=PATIENCE)
+early_stopping = EarlyStopping('val_loss', min_delta=MIN_DELTA,patience=PATIENCE, check_on_train_epoch_end=False, verbose=True)
 
 # Train model
 trainer = pl.Trainer(max_epochs=NUM_EPOCHS, callbacks=[early_stopping])
