@@ -6,7 +6,7 @@ from torch.utils.data import DataLoader
 from sklearn.model_selection import train_test_split
 import pandas as pd
 import pytorch_lightning as pl
-from pytorch_lightning.callbacks import EarlyStopping
+from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
 import torch.nn as nn
 import albumentations as A
 from albumentations.pytorch import ToTensorV2
@@ -47,11 +47,13 @@ test_dataset = GenderRecognitionDataset(test_df)
 train_loader = DataLoader(train_dataset,
                           batch_size=BATCH_SIZE,
                           shuffle=True,
-                          num_workers=NUM_WORKERS)
+                          num_workers=NUM_WORKERS,
+                          drop_last=True)
 val_loader = DataLoader(val_dataset,
                         batch_size=BATCH_SIZE,
                         shuffle=False,
-                        num_workers=NUM_WORKERS)
+                        num_workers=NUM_WORKERS,
+                        drop_last=True)
 
 # Enable autologging
 mlflow.pytorch.autolog()
@@ -64,13 +66,16 @@ model = BinaryResnet(loss=LOSS, lr=LEARNING_RATE)
 # Log model name as a tag
 mlflow.set_tag('model_name', model.__class__.__name__)
 
-# Create early stopping callback
+# Create callbacks
 early_stopping = EarlyStopping('val_loss',
                                min_delta=MIN_DELTA,
                                patience=PATIENCE,
-                               check_on_train_epoch_end=False,
                                verbose=True)
 
+checkpoint_callback = ModelCheckpoint(monitor='val_loss', save_top_k=1, mode='min', verbose=True)
+
 # Train model
-trainer = pl.Trainer(max_epochs=NUM_EPOCHS, callbacks=[early_stopping])
+trainer = pl.Trainer(max_epochs=NUM_EPOCHS, callbacks=[early_stopping, checkpoint_callback])
 trainer.fit(model, train_loader, val_loader)
+
+# TODO: Add test set evaluation and log test results
