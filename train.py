@@ -8,6 +8,8 @@ import pandas as pd
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import EarlyStopping
 import torch.nn as nn
+import albumentations as A
+from albumentations.pytorch import ToTensorV2
 
 BATCH_SIZE = 16
 NUM_WORKERS = 8
@@ -21,25 +23,44 @@ LOSS = nn.BCEWithLogitsLoss()
 # Set random seed
 seed = 42
 
+# Set transforms
+transforms = A.Compose([
+    A.Rotate(limit=90, p=0.8),
+    A.HorizontalFlip(),
+    A.VerticalFlip(),
+    A.RandomBrightnessContrast(),
+    ToTensorV2(),
+])
+
 # Load data
 df = pd.read_csv(CSV_DIR)
 train_df, val_df = train_test_split(df, test_size=0.3, random_state=seed)
 val_df, test_df = train_test_split(val_df, test_size=0.5, random_state=seed)
 
-train_dataset = GenderRecognitionDataset(train_df)
+train_dataset = GenderRecognitionDataset(train_df, transforms=transforms)
 val_dataset = GenderRecognitionDataset(val_df)
 test_dataset = GenderRecognitionDataset(test_df)
 
 # Get dataloaders
-train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=NUM_WORKERS)
-val_loader = DataLoader(val_dataset, batch_size=BATCH_SIZE, shuffle=False, num_workers=NUM_WORKERS)
+train_loader = DataLoader(train_dataset,
+                          batch_size=BATCH_SIZE,
+                          shuffle=True,
+                          num_workers=NUM_WORKERS)
+val_loader = DataLoader(val_dataset,
+                        batch_size=BATCH_SIZE,
+                        shuffle=False,
+                        num_workers=NUM_WORKERS)
 
 # Create model
 # model = BinaryClassificationNet(loss=LOSS, lr=LEARNING_RATE)
 model = BinaryResnet(loss=LOSS, lr=LEARNING_RATE)
 
 # Create early stopping callback
-early_stopping = EarlyStopping('val_loss', min_delta=MIN_DELTA,patience=PATIENCE, check_on_train_epoch_end=False, verbose=True)
+early_stopping = EarlyStopping('val_loss',
+                               min_delta=MIN_DELTA,
+                               patience=PATIENCE,
+                               check_on_train_epoch_end=False,
+                               verbose=True)
 
 # Train model
 trainer = pl.Trainer(max_epochs=NUM_EPOCHS, callbacks=[early_stopping])
